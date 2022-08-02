@@ -1,8 +1,9 @@
 from typing import Dict, List
 import sys
+import json
 
 sys.path.append("app/core/validator")
-from src.utils import validate_image_files_exist, log_n_print
+from src.utils import validate_image_files_exist, log_n_print, get_annotation_file_types
 
 def validate_label_files(
     label_list: List[str], num_classes: int, errors: List[str], fix: bool = False
@@ -103,3 +104,4 @@ def validate(
     errors = validate_label_files(label_list, num_classes, errors, fix)
     log_n_print("[Validate: 5/5]: Validation finished for label files.")
     return errors
+

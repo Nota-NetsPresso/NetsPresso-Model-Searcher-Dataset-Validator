@@ -1,5 +1,6 @@
 from typing import Dict, List
 import sys
+import os
 
 sys.path.append("app/core/validator")
 from src.utils import (get_bbox_from_xml_obj, get_image_info_xml, 
@@ -15,72 +16,73 @@ def validate_label_files(
     errors: List[str]
 ):
     for anno in label_list:
+        display_anno = os.path.basename(anno)
         try:
             xml_obj = xml_load(anno)
             image_info = get_image_info_xml(xml_obj)
         except:
-            errors.append(f"{anno} is broken file.")
+            errors.append(f"{display_anno} is broken file.")
             return errors
         for obj in xml_obj.findall("object"):
             if not obj:
-                errors.append(f"There is not object tag in {anno}.")
+                errors.append(f"There is not object tag in {display_anno}.")
                 continue
             xmin, ymin, xmax, ymax, errors = get_bbox_from_xml_obj(obj, label2id, anno, errors)
             if not image_info["width"]:
                 errors.append(
-                    f"There is not width in {anno}."
+                    f"There is not width in {display_anno}."
                 )
                 continue
             if not image_info["height"]:
                 errors.append(
-                    f"There is not height in {anno}."
+                    f"There is not height in {display_anno}."
                 )
                 continue
             if type(image_info["width"]) not in [int, float]:
                 errors.append(
-                    f"'width' is not a number in {anno}."
+                    f"'width' is not a number in {display_anno}."
                 )
                 continue
             if type(image_info["height"]) not in [int, float]:
                 errors.append(
-                    f"'height' is not a number in {anno}."
+                    f"'height' is not a number in {display_anno}."
                 )
                 continue
             if (xmax <= xmin) or (ymax <= ymin):
                 errors.append(
-                    f"Box size error in {anno}: (xmin, ymin, xmax, ymax): {xmin, ymin, xmax, ymax}."
+                    f"Box size error in {display_anno}: (xmin, ymin, xmax, ymax): {xmin, ymin, xmax, ymax}."
                 )
             if image_info["width"] < xmax:
                 errors.append(
-                    f"Box size error in {anno}: xmax: {xmax} is greater than 'width'."
+                    f"Box size error in {display_anno}: xmax: {xmax} is greater than 'width'."
                 )
             if image_info["height"] < ymax:
                 errors.append(
-                    f"Box size error in {anno}: ymax: {ymax} is greater than 'height'."
+                    f"Box size error in {display_anno}: ymax: {ymax} is greater than 'height'."
                 )
             if xmin < 0:
                 errors.append(
-                    f"Box size error in {anno}: xmin: {xmin} is negative value."
+                    f"Box size error in {display_anno}: xmin: {xmin} is negative value."
                 )
             if ymin < 0:
                 errors.append(
-                    f"Box size error in {anno}: ymin: {ymin} is negative value."
+                    f"Box size error in {display_anno}: ymin: {ymin} is negative value."
                 )
             if xmax < 0:
                 errors.append(
-                    f"Box size error in {anno}: xmax: {xmax} is negative value."
+                    f"Box size error in {display_anno}: xmax: {xmax} is negative value."
                 )
             if ymax < 0:
                 errors.append(
-                    f"Box size error in {anno}: ymax: {ymax} is negative value."
+                    f"Box size error in {display_anno}: ymax: {ymax} is negative value."
                 )
             if xmax == 0:
                 errors.append(
-                    f"Box size error in {anno}: xmax can not be 0."
+                    f"Box size error in {display_anno}: xmax can not be 0."
                 )
             if ymax == 0:
                 errors.append(
-                    f"Box size error in {anno}: ymax can not be 0."
+                    f"Box size error in {display_anno}: ymax can not be 0."
                 )                
     return errors
 
@@ -127,3 +129,5 @@ def validate(
     errors = validate_label_files(img_list, label_list, num_classes, label2id, errors)
     log_n_print("[Validate: 5/5]: Validation finished for label files.")
     return errors
+
+
