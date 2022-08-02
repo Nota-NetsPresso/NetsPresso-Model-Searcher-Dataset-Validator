@@ -35,7 +35,7 @@ def main(dir_path, format, task, data_type, yaml_path=None, output_dir=None):
     
 def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=None, yaml_path=None):
     if output_dir is None:
-        output_dir = "."
+        return 
     os.makedirs(output_dir, exist_ok=True)
     if test_dir is None and valid_dir is None:
         raise Exception("At least one of test_dir or valid_dir should be specified")
