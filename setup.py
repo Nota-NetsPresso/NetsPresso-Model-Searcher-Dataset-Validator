@@ -14,3 +14,5 @@ setup(
     options=dict(build_exe=buildOptions),
     executables=exe
 )
+
+# python setup.py build
