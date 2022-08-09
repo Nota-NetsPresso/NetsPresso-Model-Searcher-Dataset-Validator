@@ -47,7 +47,7 @@ def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=N
         test_zip_path, test_yaml, test_md5, succeed = main(test_dir, format, task, "test", yaml_path, output_dir) # test
         succeed_list.append(succeed)
     if valid_dir :
-        valid_zip_path, valid_yaml, valid_md5, succeed = main(valid_dir, format, task, "valid", yaml_path, output_dir) # valid
+        valid_zip_path, valid_yaml, valid_md5, succeed = main(valid_dir, format, task, "val", yaml_path, output_dir) # valid
         succeed_list.append(succeed)
 
     yaml_all = {}
@@ -57,14 +57,14 @@ def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=N
     if test_dir :
         yaml_all["test"] = {"num_images": test_yaml["num_images"], "obj_stat": test_yaml["obj_stat"]}
     if valid_dir :
-        yaml_all["valid"] = {"num_images": valid_yaml["num_images"], "obj_stat": valid_yaml["obj_stat"]}
+        yaml_all["val"] = {"num_images": valid_yaml["num_images"], "obj_stat": valid_yaml["obj_stat"]}
 
     md5_all = {}
     md5_all["train"] = train_md5
     if test_dir :
         md5_all["test"] = test_md5
     if valid_dir :
-        md5_all["valid"] = valid_md5
+        md5_all["val"] = valid_md5
     if format == "yolo":
         md5_all["data"] = calc_file_hash(yaml_path)
     
