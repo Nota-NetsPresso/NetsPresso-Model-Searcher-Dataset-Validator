@@ -599,7 +599,7 @@ def zip_packing(root_path, filename):
 
 
 def make_yaml_file(output_path, content):
-    with open(output_path, 'a') as f:
+    with open(output_path, 'w') as f:
         yaml.dump(content, f)
 
 
