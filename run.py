@@ -65,10 +65,10 @@ def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=N
         md5_all["test"] = test_md5
     if valid_dir :
         md5_all["val"] = valid_md5
-    if format == "yolo":
-        md5_all["data"] = calc_file_hash(yaml_path)
-    
+    # if format == "yolo":
+    #     md5_all["data"] = calc_file_hash(yaml_path)
     make_yaml_file(f'{output_dir}/data.yaml', yaml_all)
+    md5_all["data"] = calc_file_hash(f'{output_dir}/data.yaml')
     make_yaml_file(f'{output_dir}/certification.np', md5_all)
 
     if all(succeed_list):
