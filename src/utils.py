@@ -533,7 +533,6 @@ def yolo_stat(data_path, yaml_path):
     for anno in annotation_files:
         obj_stat.append(get_object_stat_yolo(anno, names))
     
-    names = set(names)
     obj_stat_ret = reduce(sum_stat_dict, obj_stat)
 
     return names, obj_stat_ret, num_images
