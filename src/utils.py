@@ -563,6 +563,7 @@ def structure_convert(data_dir, format):
     image_files = []
     for img_ext in image_file_types:
         image_files += glob.glob(f"{data_dir}/{img_ext}")
+    image_files = list(set(image_files))
     num_images = len(image_files)
     for img in image_files:
         shutil.copy(img, os.path.join(images_dir,os.path.basename(img)))
@@ -571,6 +572,7 @@ def structure_convert(data_dir, format):
     annotation_files = []
     for anno_ext in annotation_file_types:
         annotation_files += glob.glob(f"{data_dir}/{anno_ext}")
+    annotation_files = list(set(annotation_files))
     names = []
     obj_stat = []
     for anno in annotation_files:
