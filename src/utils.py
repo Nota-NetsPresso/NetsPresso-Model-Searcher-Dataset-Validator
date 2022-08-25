@@ -522,6 +522,7 @@ def yolo_stat(data_path, yaml_path):
     image_files = []
     for img_ext in image_file_types:
         image_files += glob.glob(f"{data_path}/images/{img_ext}")
+    image_files = list(set(image_files))
     num_images = len(image_files)
     names = data_dict["names"]
 
@@ -529,6 +530,7 @@ def yolo_stat(data_path, yaml_path):
     annotation_files = []
     for anno_ext in annotation_file_types:
         annotation_files += glob.glob(f"{data_path}/labels/{anno_ext}")
+    annotation_files = list(set(annotation_files))
     obj_stat = []
     for anno in annotation_files:
         obj_stat.append(get_object_stat_yolo(anno, names))
