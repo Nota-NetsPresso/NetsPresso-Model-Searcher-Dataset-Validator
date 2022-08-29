@@ -54,6 +54,7 @@ def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=N
 
     yaml_all = {}
     yaml_all["nc"] = train_yaml["nc"]
+    yaml_all["format"] = format
     yaml_all["names"] = train_yaml["names"]
     yaml_all["train"] = {"num_images": train_yaml["num_images"], "obj_stat": train_yaml["obj_stat"]}
     if test_dir :
