@@ -20,19 +20,21 @@ def main(dir_path, format, task, data_type, yaml_path=None, output_dir=None):
     make_yaml_file(temp_yaml_path, yaml_content)
     succeed = validate(tmp_path, format, temp_yaml_path, output_dir, task)
     zip_file_path = f"{output_dir}/{data_type}.zip"
-    
+
     if succeed:
+        os.remove(temp_yaml_path)
         zip_packing(tmp_path, zip_file_path)
         md5_hash = calc_file_hash(zip_file_path)
         if format in ["coco", "voc"]:
           shutil.rmtree(tmp_path)
         return zip_file_path, yaml_content, md5_hash, succeed
     else:
+        os.remove(temp_yaml_path)
         if format in ["coco", "voc"]:
           shutil.rmtree(tmp_path)
         return zip_file_path, yaml_content, None, succeed
-    
-    
+
+
 def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=None, yaml_path=None):
     if output_dir is None:
         return 

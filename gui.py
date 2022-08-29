@@ -91,19 +91,18 @@ train_dir_label.grid(column=1, row=1)
 train_data_button = ttk.Button(frame_data_path, text="Select", command=select_train_dir)
 train_data_button.grid(column=2, row=1)
 
-
-ttk.Label(frame_data_path, text="Test Dataset Path").grid(column=0, row=2, sticky='w')
-test_dir_label = ttk.Entry(frame_data_path, textvariable=test_dir)
-test_dir_label.grid(column=1, row=2)
-test_data_button = ttk.Button(frame_data_path, text="Select", command=select_test_dir)
-test_data_button.grid(column=2, row=2)
-
-
-ttk.Label(frame_data_path, text="Validation Dataset Path").grid(column=0, row=3, sticky='w')
+ttk.Label(frame_data_path, text="Validation Dataset Path").grid(column=0, row=2, sticky='w')
 valid_dir_label = ttk.Entry(frame_data_path, textvariable=valid_dir)
-valid_dir_label.grid(column=1, row=3)
+valid_dir_label.grid(column=1, row=2)
 valid_data_button = ttk.Button(frame_data_path, text="Select", command=select_valid_dir)
-valid_data_button.grid(column=2, row=3)
+valid_data_button.grid(column=2, row=2)
+
+ttk.Label(frame_data_path, text="Test Dataset Path").grid(column=0, row=3, sticky='w')
+test_dir_label = ttk.Entry(frame_data_path, textvariable=test_dir)
+test_dir_label.grid(column=1, row=3)
+test_data_button = ttk.Button(frame_data_path, text="Select", command=select_test_dir)
+test_data_button.grid(column=2, row=3)
+
 ttk.Separator(frame_data_path, orient="horizontal").grid(column=0, row=4, columnspan=3, sticky='nesw')
 
 ttk.Label(frame_data_path, text="Dataset Format", font=("Arial", 10)).grid(column=0, row=5, sticky='w')
