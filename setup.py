@@ -14,7 +14,7 @@ OPTIONS = {
 }
 
 setup(
-    name="Netspresso Dataset Validator",
+    name="NetsPresso Dataset Validator",
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
