@@ -4,7 +4,7 @@ import sys
 buildOptions = dict(
     packages=["yaml","loguru", "src"],
 ) 
-exe = [Executable("gui.py", base=base, targetName="NetsPresso Dataset Validator.exe")]
+exe = [Executable("gui.py", targetName="NetsPresso Dataset Validator.exe", icon="nota_icon.ico")]
 
 setup(
     name='Filter', 
