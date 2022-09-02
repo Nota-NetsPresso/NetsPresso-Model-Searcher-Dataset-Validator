@@ -372,7 +372,7 @@ def validate_detection_task(
     errors = []
     dir_path = Path(root_path)
     errors = validate_second_dir(dir_path, errors)
-    log_n_print("[Validate: 1/5]: Done validation dir structure ['images', 'labels'].")
+    log_n_print("[Validate: 1/5]: Done validation dir structure.")
     validate_dataset_type(root_path, data_format)
     log_n_print("[Validate: 2/5]: Done validation, user select correct data type.")
     img_list, label_list = get_file_lists(dir_path)
@@ -428,7 +428,7 @@ def validate(
     log_n_print(f"autofix: {fix}")
     log_n_print("=========================")
     print(task, "task")
-    if task == "object_detection":
+    if task == "detection":
         errors = validate_detection_task(root_path, data_format, yaml_path)
     elif task == "classification":
         errors = validate_classification_task(root_path, data_format, yaml_path)
