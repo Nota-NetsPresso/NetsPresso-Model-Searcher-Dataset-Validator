@@ -57,7 +57,7 @@ def run():
         yaml_path_get = yaml_path.get()
     
     print(train_dir.get())
-    execute(data_format.get(), "object_detection", train_dir.get(), test_dir_get, valid_dir_get, output_dir_get, yaml_path_get)
+    execute(data_format.get(), "detection", train_dir.get(), test_dir_get, valid_dir_get, output_dir_get, yaml_path_get)
     progress.set("Done")
 
 

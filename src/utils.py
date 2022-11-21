@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import sys
 import json
 import re
@@ -145,8 +146,9 @@ def get_image_info_xml(annotation_root, extract_num_from_imgid=True) -> Dict[str
 
 
 def xml_load(xml_path: str):
-    tree = ET.parse(xml_path)
-    annotation_root = tree.getroot()
+    with open(xml_path, 'r') as xml_file:
+        tree = ET.parse(xml_path)
+        annotation_root = tree.getroot()
     return annotation_root
 
 # Not used function
@@ -440,12 +442,11 @@ def validate(
 
 
 def get_class_info_coco(annotation_file):
-    with open(annotation_file, 'r') as anno_file:
+    with open(annotation_file, 'r', encoding='utf-8') as anno_file:
         anno = anno_file.read()
     anno_dict = json.loads(anno)
     categories = anno_dict["categories"]
     names = [cat["name"] for cat in categories]
-    
     return names
 
 
@@ -602,8 +603,8 @@ def zip_packing(root_path, filename):
 
 
 def make_yaml_file(output_path, content):
-    with open(output_path, 'w') as f:
-        yaml.dump(content, f)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        yaml.dump(content, f, allow_unicode=True)
 
 
 def make_yaml_content(names, num_images, obj_stat):
