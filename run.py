@@ -1,105 +1,78 @@
 import argparse
-from src.utils import validate, structure_convert, zip_packing, make_yaml_file, calc_file_hash,  make_yaml_content, yolo_stat, log_n_print
 import shutil
 import os
 import yaml
+from typing import Literal
+
+from src.task.wrapper import BaseWrapper
+from src.config import DatasetType, TaskType
 
 
-def main(dir_path, format, task, data_type, yaml_path=None, output_dir=None):
-    if format == "yolo" and yaml_path is None:
-        raise Exception("yaml_path should be defined for yolo format ")
-
-    if format in ["coco", "voc"]:
-        tmp_path, names, obj_stat, num_images = structure_convert(dir_path, format)
-    else:
-        tmp_path = dir_path
-        names, obj_stat, num_images = yolo_stat(tmp_path, yaml_path)
-        
-    yaml_content = make_yaml_content(names, num_images, obj_stat)
-    temp_yaml_path = os.path.join(tmp_path, "temp_yaml.yaml")
-    make_yaml_file(temp_yaml_path, yaml_content)
-    succeed = validate(tmp_path, format, temp_yaml_path, output_dir, task)
-    zip_file_path = f"{output_dir}/{data_type}.zip"
-
-    if succeed:
-        os.remove(temp_yaml_path)
-        zip_packing(tmp_path, zip_file_path)
-        md5_hash = calc_file_hash(zip_file_path)
-        if format in ["coco", "voc"]:
-          shutil.rmtree(tmp_path)
-        return zip_file_path, yaml_content, md5_hash, succeed
-    else:
-        os.remove(temp_yaml_path)
-        if format in ["coco", "voc"]:
-          shutil.rmtree(tmp_path)
-        return zip_file_path, yaml_content, None, succeed
-
-
-def execute(format, task, train_dir, test_dir=None, valid_dir=None, output_dir=None, yaml_path=None):
-    if output_dir is None:
-        return 
-    os.makedirs(output_dir, exist_ok=True)
-    if test_dir is None and valid_dir is None:
-        raise Exception("At least one of test_dir or valid_dir should be specified")
-
+def execute(
+        format:str, 
+        task:str, 
+        train_dir:str, 
+        test_dir:str=None, 
+        valid_dir:str=None,
+        output_dir:str=None, 
+        yaml_path:str=None,
+        id2label_path:str=None,
+        ):
     succeed_list = []
-    train_zip_path, train_yaml, train_md5, succeed = main(train_dir, format, task, "train", yaml_path, output_dir) # train
+    base_wrapper = BaseWrapper(format, task)
+    base_wrapper.task_wrapper.task_class.preprocess(output_dir, valid_dir, test_dir)
+
+    train_zip_path, train_yaml, train_md5, succeed = base_wrapper.dataset_format_wrapper.format_module.validate(
+        yaml_path=yaml_path, 
+        root_path=train_dir, 
+        output_dir=output_dir, 
+        split_name="train",
+        id2label_path=id2label_path
+        )
     succeed_list.append(succeed)
-    if test_dir :
-        test_zip_path, test_yaml, test_md5, succeed = main(test_dir, format, task, "test", yaml_path, output_dir) # test
+    if valid_dir :
+        valid_zip_path, valid_yaml, valid_md5, succeed = base_wrapper.dataset_format_wrapper.format_module.validate(
+            yaml_path=yaml_path, 
+            root_path=valid_dir, 
+            output_dir=output_dir, 
+            split_name="val",
+            id2label_path=id2label_path
+            )
         succeed_list.append(succeed)
-    if valid_dir :
-        valid_zip_path, valid_yaml, valid_md5, succeed = main(valid_dir, format, task, "val", yaml_path, output_dir) # valid
+    if test_dir :
+        test_zip_path, test_yaml, test_md5, succeed = base_wrapper.dataset_format_wrapper.format_module.validate(
+            yaml_path=yaml_path, 
+            root_path=test_dir, 
+            output_dir=output_dir, 
+            split_name="test",
+            id2label_path=id2label_path
+        )
         succeed_list.append(succeed)
-
-    yaml_all = {}
-    yaml_all["nc"] = train_yaml["nc"]
-    yaml_all["format"] = format
-    yaml_all["names"] = train_yaml["names"]
-    yaml_all["train"] = {"num_images": train_yaml["num_images"], "obj_stat": train_yaml["obj_stat"]}
-    if test_dir :
-        yaml_all["test"] = {"num_images": test_yaml["num_images"], "obj_stat": test_yaml["obj_stat"]}
-    if valid_dir :
-        yaml_all["val"] = {"num_images": valid_yaml["num_images"], "obj_stat": valid_yaml["obj_stat"]}
-
-    md5_all = {}
-    md5_all["train"] = train_md5
-    if test_dir :
-        md5_all["test"] = test_md5
-    if valid_dir :
-        md5_all["val"] = valid_md5
-
-    make_yaml_file(f'{output_dir}/data.yaml', yaml_all)
-    md5_all["data"] = calc_file_hash(f'{output_dir}/data.yaml')
-    make_yaml_file(f'{output_dir}/certification.np', md5_all)
-
-    if all(succeed_list):
-        log_n_print("Validation completed! Now try your dataset on NetsPresso!")
-    else:
-        log_n_print("Validation error, please check 'validation_result.txt'.")
-
+    
+    base_wrapper.task_wrapper.task_class.postprocess(format, train_yaml, valid_yaml, test_yaml, valid_dir, test_dir, train_md5, test_md5, valid_md5, output_dir, succeed_list)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Dataset validator.")
-    parser.add_argument("--format", type=str, required=True, help="dataset format")
-    parser.add_argument("--task", type=str, default="detection", help="task")
+    parser.add_argument("--format", type=DatasetType, choices=list(DatasetType), required=True, help="dataset format")
+    parser.add_argument("--task", type=TaskType, choices=list(TaskType), default="object_detection", help="task")
     parser.add_argument("--yaml_path", type=str, required=False, help="yaml file path")
+    parser.add_argument("--id2label_path", type=str, required=False, help="id2label file path")
     parser.add_argument("--train_dir", type=str, required=True, help="train dataset path.")
     parser.add_argument("--test_dir", type=str, required=False, help="test dataset path.")
     parser.add_argument("--valid_dir", type=str, required=False, help="validation dataset path.")
     parser.add_argument("--output_dir", type=str, required=False, help="output directory")
     args = parser.parse_args()
 
-    format, task, yaml_path, train_dir, test_dir, valid_dir, output_dir= (
-        args.format.lower(),
-        args.task.lower(),
+    format, task, yaml_path, train_dir, test_dir, valid_dir, output_dir, id2label_path=(
+        str(args.format),
+        str(args.task),
         args.yaml_path,
         args.train_dir,
         args.test_dir,
         args.valid_dir,
-        args.output_dir.rstrip('/')
+        args.output_dir.rstrip('/'),
+        args.id2label_path
     )
     
-    execute(format, task, train_dir, test_dir, valid_dir, output_dir, yaml_path)
-    
+    execute(format, task, train_dir, test_dir, valid_dir, output_dir, yaml_path, id2label_path)

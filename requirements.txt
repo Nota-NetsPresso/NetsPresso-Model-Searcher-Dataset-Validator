@@ -1,3 +1,4 @@
 pyyaml
 loguru
 cx-freeze
+opencv-python

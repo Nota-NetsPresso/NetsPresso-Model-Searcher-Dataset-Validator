@@ -1,9 +1,13 @@
-from typing import Dict, List
 import sys
-import json
+import os
+from pathlib import Path
+from typing import List, Literal
 
 sys.path.append("app/core/validator")
-from src.utils import validate_image_files_exist, log_n_print, get_annotation_file_types
+from src.utils import yolo_stat
+from src.task.validate import validate_image_files_exist, validate_second_dir
+from src.task.object_detection.abs import ObjectDetectionDatasetFormat
+
 
 def validate_label_files(
     label_list: List[str], num_classes: int, errors: List[str], fix: bool = False
@@ -90,18 +94,33 @@ def validate_label_files(
     return errors
 
 
-def validate(
-    dir_path: str,
-    num_classes: int,
-    label_list: List[str],
-    img_list: List[str],
-    yaml_path: None,
-    errors: List[str],
-    fix: bool=False,
-):
-    errors = validate_image_files_exist(img_list, label_list, "txt", errors)
-    log_n_print("[Validate: 4/5]: Validation finished for existing image files in the correct position.")
-    errors = validate_label_files(label_list, num_classes, errors, fix)
-    log_n_print("[Validate: 5/5]: Validation finished for label files.")
-    return errors
+class YOLO(ObjectDetectionDatasetFormat):
+    def set_common_attrs(self, yaml_path:str, root_path:str, output_dir:str, split_name:Literal["train", "val", "test"]):
+        if yaml_path is None:
+            raise Exception("yaml_path should be defined for yolo format")
+        self.yaml_path = yaml_path
+        self.root_path = Path(root_path)
+        self.output_dir = output_dir
+        self.split_name = split_name
 
+    def get_stat(self):
+        tmp_path = str(self.root_path)
+        names, obj_stat, num_images = yolo_stat(tmp_path, self.yaml_path)        
+        return tmp_path, names, obj_stat, num_images
+        
+    def remove_trees(self, tmp_path):
+        """
+        Just being for inheritance.
+        """
+        pass
+
+    def specific_validation_for_each_dataset(self, **kwargs):
+        errors = kwargs["errors"]
+        img_list = kwargs["img_list"]
+        label_list = kwargs["label_list"]
+        num_classes = kwargs["num_classes"]
+
+        errors = validate_second_dir(self.root_path, errors, ["images", "labels"])
+        errors = validate_image_files_exist(img_list, label_list, errors)
+        errors = validate_label_files(label_list, num_classes, errors, fix=False)
+        return errors
