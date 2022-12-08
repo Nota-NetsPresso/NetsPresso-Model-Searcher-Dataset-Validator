@@ -3,59 +3,40 @@ import sys
 import json
 import re
 import shutil
-import importlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List
 from functools import reduce
 import zipfile
-
 import os
 import glob
-from loguru import logger
 import yaml
 import hashlib
 import datetime
 
+import cv2
+from loguru import logger
 
 sys.path.append("app/core/validator")
-from src.exceptions import DatatypeException, YamlException, LabelException
+from src.config import img_file_types
+from src.exceptions import LabelException
 
 
 global LOCAL
 LOCAL=False
 
 
-def get_img_list(file_paths: str, img_list: List[str]) -> List[str]:
-    img_file_types = get_img_file_types()
-    for types in img_file_types:
-        files = Path(file_paths).glob(f"**/{types}")
-        for f in files:
-            if f.is_file():
-                img_list.append(str(f))
-    return img_list
-
-
-def get_label_list(file_paths: Path, label_list: List[str]) -> List[str]:
-    glob_list = ["**/*.txt", "**/*.json", "**/*.xml"]
-    for g in glob_list:
-        files = Path(file_paths).glob(g)
-        for f in files:
-            if f.is_file():
-                label_list.append(str(f))
-    return label_list
-
-
-def get_file_lists(dir_path: str):
+def get_target_suffix_file_list(dir_path: str, suffixes:List[str]):
     """
     Return image and label file list in form List[str], List[str]
     """
-    img_list = []
-    label_list = []
-    p = Path(dir_path)
-    label_list = get_label_list(p, label_list)
-    img_list = get_img_list(p, img_list)
-    return sorted(img_list), sorted(label_list)
+    file_list=[]
+    for types in suffixes:
+        files = Path(dir_path).glob(f"**/{types}")
+        for f in files:
+            if f.is_file():
+                file_list.append(str(f))
+    return sorted(file_list)
 
 
 def yaml_safe_load(yaml_path: str) -> Dict[str, any]:
@@ -151,64 +132,6 @@ def xml_load(xml_path: str):
         annotation_root = tree.getroot()
     return annotation_root
 
-# Not used function
-# def validate_first_dirs(dir_path: str, errors: List[str]) -> List[str]:
-#     """
-#     Validate if dir_path has directory other than ['train', 'val', 'test'].
-#     """
-#     paths = Path(dir_path).glob("*")
-#     check_dir_paths = []
-#     ret_dir_paths = []
-#     for p in paths:
-#         if p.is_dir():
-#             check_dir_paths.append(str(p.name))
-#             ret_dir_paths.append(str(p))
-#     if not ("train" in check_dir_paths):
-#         errors.append("Dataset dosen't have 'train' dir.")
-#         return ret_dir_paths, errors
-#     correct_cases = [
-#         set(["train", "val", "test"]),
-#         set(["train", "val"]),
-#         set(["train", "test"]),
-#     ]
-#     if set(check_dir_paths) not in correct_cases:
-#         errors.append(
-#             "Dataset has wrong directory structure. Any other directory than ['train', 'val', 'test'] is not accepted in first depth."
-#         )
-#     return ret_dir_paths, errors
-
-# Not used function
-# def validate_second_dirs(dir_path: List[str], errors: List[str]) -> List[str]:
-#     ret_dir_paths = []
-#     for sub_dir in dir_path:
-#         paths = Path(sub_dir).glob("*")
-#         check_dir_paths = []
-#         for p in paths:
-#             if p.is_dir():
-#                 check_dir_paths.append(str(p.name))
-#                 ret_dir_paths.append(str(p))
-#         if not ("images" in check_dir_paths):
-#             errors.append(f"Dataset dosen't have 'images' dir under {sub_dir}.")
-#         if not ("labels" in check_dir_paths):
-#             errors.append(f"Dataset dosen't have 'labels' dir under {sub_dir}.")
-#     return errors
-
-
-def validate_second_dir(dir_path: Path, errors: List[str]) -> List[str]:
-    """
-    Validate dir_path has 'images' and 'labels' dir or not.
-    """
-    paths = Path(dir_path).glob("*")
-    check_dir_paths = []
-    for p in paths:
-        if p.is_dir():
-            check_dir_paths.append(str(p.name))
-    if not ("images" in check_dir_paths):
-        errors.append(f"Dataset dosen't have 'images' dir under {dir_path}.")
-    if not ("labels" in check_dir_paths):
-        errors.append(f"Dataset dosen't have 'labels' dir under {dir_path}.")
-    return errors
-
 
 def replace_images2labels(path: str) -> str:
     # for case of linux and mac user
@@ -221,65 +144,6 @@ def get_filename_wo_suffix(file_path: str):
     file_path = file_path.split(".")
     file_path = ".".join(file_path[:-1])
     return file_path
-
-
-def validate_image_files_exist(
-    img_list: List[str], label_list: List[str], suffix: str, errors: List[str]
-):
-    img_name, label_name = [], []
-    for i in img_list:
-        path_wo_suffix = get_filename_wo_suffix(i)
-        path_wo_suffix = replace_images2labels(path_wo_suffix)
-        img_name += [path_wo_suffix]
-    for l in label_list:
-        label_name = replace_images2labels(get_filename_wo_suffix(l))
-        if not label_name in img_name:
-            errors.append(f"There is no image file for annotation file '{l}'")
-    return errors
-
-
-def validate_data_yaml(yaml_path: str, errors: List[str]):
-    yaml_path = Path(yaml_path)
-    if not yaml_path.is_file():
-        raise YamlException(f"There is not {str(yaml_path)}")
-    try:
-        data_dict = yaml_safe_load(str(yaml_path))
-    except:
-        raise YamlException(f"{str(yaml_path)} file is broken.")
-    if not data_dict.get("names"):
-        raise YamlException(f"There is no 'names' in {str(yaml_path)}.")
-    if not data_dict.get("nc"):
-        raise YamlException(f"There is no 'nc' in {str(yaml_path)}.")
-    if len(data_dict["names"]) != data_dict["nc"]:
-        errors.append(
-            f"Length of 'names' and value of 'nc' in {str(yaml_path)} must be same."
-        )
-    num_classes = max([len(data_dict["names"]), data_dict["nc"]])
-    return data_dict["names"], errors, num_classes
-
-
-def validate_dataset_type(root_path: str, user_data_type: str):
-    """
-    data_type in ["coco", "yolo", "voc"]
-    """
-    data_type = None
-    paths = Path(root_path).glob("**/*")
-    for p in paths:
-        suffix = str(p.suffix)
-        if suffix == ".xml":
-            data_type = "voc"
-        if suffix == ".txt":
-            data_type = "yolo"
-            break
-        if suffix == ".json":
-            data_type = "coco"
-            break
-    if not data_type:
-        raise DatatypeException(f"There are not any annotation files in {root_path}.")
-    elif user_data_type != data_type:
-        raise DatatypeException(
-            f"Check correct data type, your dataset type looks like '{data_type}'."
-        )
 
 
 def get_dir_list(path: Path) -> List[str]:
@@ -318,30 +182,6 @@ def get_target_dirs(dir_paths: List[str], file_types: List[str]) -> List[str]:
     return ret_dir_paths
 
 
-def get_img_file_types() -> List[str]:
-    img_file_types = [
-        "*.jpeg",
-        "*.JPEG",
-        "*.jpg",
-        "*.JPG",
-        "*.png",
-        "*.PNG",
-        "*.BMP",
-        "*.bmp",
-        "*.TIF",
-        "*.tif",
-        "*.TIFF",
-        "*.tiff",
-        "*.DNG",
-        "*.dng",
-        "*.WEBP",
-        "*.webp",
-        "*.mpo",
-        "*.MPO",
-    ]
-    return img_file_types
-
-
 def get_annotation_file_types():
     annotation_file_types =[
       "*.xml",
@@ -363,82 +203,6 @@ def log_n_print(message:str):
         logger.debug(message)
     else:
         print(message)
-
-
-def validate_detection_task(
-    root_path: str,
-    data_format: str,
-    yaml_path: str,
-    fix=False,
-):
-    errors = []
-    dir_path = Path(root_path)
-    errors = validate_second_dir(dir_path, errors)
-    log_n_print("[Validate: 1/5]: Done validation dir structure.")
-    validate_dataset_type(root_path, data_format)
-    log_n_print("[Validate: 2/5]: Done validation, user select correct data type.")
-    img_list, label_list = get_file_lists(dir_path)
-    yaml_label, errors, num_classes = validate_data_yaml(yaml_path, errors)
-    log_n_print(f"[Validate: 3/5]: Done validation for {yaml_path} file.")
-    _validate = getattr(
-        importlib.import_module(f"src.{data_format.lower()}"),
-        "validate",
-    )
-    errors = _validate(
-        dir_path, num_classes, label_list, img_list, yaml_label, errors, fix
-        )
-
-    return errors
-
-
-def validate_classification_task(
-    root_path: str,
-    data_format: str,
-    yaml_path: str,
-    ):
-    errors = []
-    dir_path = Path(root_path)
-    #dir_paths, errors = validate_first_dirs(dir_path, errors)
-    #log_n_print("[Validate: 1/4]: Done validation dir structure ['train', 'val', 'test'].")
-    yaml_label, errors, _ = validate_data_yaml(yaml_path, errors)
-    log_n_print(f"[Validate: 1/3]: Done validation for {yaml_path} file.")
-    _validate = getattr(
-        importlib.import_module(f"src.{data_format.lower()}"),
-        "validate",
-        )
-    errors = _validate(
-        yaml_label, dir_path, errors
-        )
-    return errors
-
-
-def validate(
-    root_path: str,
-    data_format: str,
-    yaml_path: str,
-    output_path: str,
-    task: str="detection",
-    fix=False,
-    local=False # True for local run, False for BE run.
-):
-    LOCAL = local
-    log_n_print("Start dataset validation.")
-    log_n_print("=========================")
-    log_n_print(f"data path: {root_path}")
-    log_n_print(f"data format: {data_format}")
-    log_n_print(f"yaml path: {yaml_path}")
-    log_n_print(f"autofix: {fix}")
-    log_n_print("=========================")
-    print(task, "task")
-    if task == "detection":
-        errors = validate_detection_task(root_path, data_format, yaml_path)
-    elif task == "classification":
-        errors = validate_classification_task(root_path, data_format, yaml_path)
-    if len(errors) == 0:
-        return True
-    else:
-        write_error_txt(errors, output_path)
-        return False
 
 
 def get_class_info_coco(annotation_file):
@@ -518,10 +282,8 @@ def get_object_stat_yolo(annotation_file, names):
 def yolo_stat(data_path, yaml_path):
     with open(yaml_path, 'r') as data_yaml:
         data_dict = yaml.load(data_yaml.read(), Loader=yaml.FullLoader)
-
-    image_file_types = get_img_file_types()
     image_files = []
-    for img_ext in image_file_types:
+    for img_ext in img_file_types:
         image_files += glob.glob(f"{data_path}/images/{img_ext}")
     image_files = list(set(image_files))
     num_images = len(image_files)
@@ -551,20 +313,15 @@ def sum_stat_dict(dict_a, dict_b):
     return ret
 
 
-def structure_convert(data_dir, format):
-    if not format in ["coco", "voc"]:
-        raise Exception("not valid format")
-
+def structure_convert(data_dir:str, format:str):
     tmp_dir = os.path.join(data_dir, f'tmp_{datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")}')
     os.mkdir(tmp_dir)
     images_dir = os.path.join(tmp_dir, 'images')
     os.mkdir(images_dir)
     labels_dir = os.path.join(tmp_dir, 'labels')
     os.mkdir(labels_dir)
-
-    image_file_types = get_img_file_types()
     image_files = []
-    for img_ext in image_file_types:
+    for img_ext in img_file_types:
         image_files += glob.glob(f"{data_dir}/{img_ext}")
     image_files = list(set(image_files))
     num_images = len(image_files)
@@ -620,3 +377,7 @@ def calc_file_hash(path):
     return hash
 
 
+def zip_files(zip_file_name_on_path:str, target_dir:str):
+    zip_file_path = f"{zip_file_name_on_path}.zip"
+    zip_packing(target_dir, zip_file_path)
+    return zip_file_path

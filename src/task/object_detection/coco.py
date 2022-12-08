@@ -1,12 +1,13 @@
-from typing import Dict, List
+from typing import Dict, List, Literal
 from pathlib import Path
 import sys
 import json
+import os
 
-from loguru import logger
 sys.path.append("app/core/validator")
-from src.utils import (json_load, get_dir_list,
-                       get_img_file_types, get_target_dirs, log_n_print)
+from src.config import img_file_types
+from src.utils import json_load, get_dir_list, structure_convert, get_target_dirs
+from src.task.object_detection.abs import ObjectDetectionDatasetFormat
 
 
 def validate_coco_bbox(
@@ -229,7 +230,6 @@ def validate_label_files(label_list: List[str], num_classes: int, errors:List[st
 
 def validate_json_exist(dir_path: Path, errors:List[str]):
     dirs = get_dir_list(dir_path)
-    img_file_types = get_img_file_types()
     image_dir_paths = get_target_dirs(dirs, img_file_types)
     json_dir_paths = get_target_dirs(dirs, ["*.json"])
     if len(image_dir_paths) != len(json_dir_paths):
@@ -237,23 +237,16 @@ def validate_json_exist(dir_path: Path, errors:List[str]):
     return errors
 
 
-def validate(
-    dir_path: str, 
-    num_classes: int, 
-    label_list:List[str], 
-    img_list:None,
-    yaml_label:None,
-    errors:List[str],
-    fix:bool=False, # not used but be here for other dataset type
-):
-    """
-    'img_list' and 'yaml_label' are not used in this function, but written for dynamic importing in src.utils.py
-    """
-    errors = validate_json_exist(dir_path, errors)
-    log_n_print("[Validate: 4/5]:  Validation finished for existing json files in the correct position.")
-    errors = validate_label_files(label_list, num_classes, errors)
-    log_n_print("[Validate: 5/5]: Validation finished for label files.")
-    return errors
+class COCO(ObjectDetectionDatasetFormat):
+    def get_stat(self):
+        tmp_path, names, obj_stat, num_images = structure_convert(self.root_path, self.dataset_format)
+        return tmp_path, names, obj_stat, num_images
 
+    def specific_validation_for_each_dataset(self, **kwargs):
+        errors = kwargs["errors"]
+        label_list = kwargs["label_list"]
+        num_classes = kwargs["num_classes"]
 
-
+        errors = validate_json_exist(self.root_path, errors)
+        errors = validate_label_files(label_list, num_classes, errors)
+        return errors

@@ -1,0 +1,1 @@
+from src.task import image_classification, object_detection, semantic_segmentation

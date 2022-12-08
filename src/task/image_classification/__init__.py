@@ -1,0 +1,1 @@
+from src.task.image_classification.imagenet import IMAGENET as imagenet

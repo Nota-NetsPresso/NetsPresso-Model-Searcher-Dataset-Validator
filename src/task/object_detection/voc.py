@@ -1,11 +1,13 @@
-from typing import Dict, List
+from typing import Dict, List, Literal
 import sys
 import os
+from pathlib import Path
 
 sys.path.append("app/core/validator")
 from src.utils import (get_bbox_from_xml_obj, get_image_info_xml, 
-                       get_label2id, validate_image_files_exist,
-                       xml_load, log_n_print)
+                       get_label2id, xml_load, structure_convert)
+from src.task.validate import validate_image_files_exist
+from src.task.object_detection.abs import ObjectDetectionDatasetFormat
 
 
 def validate_label_files(
@@ -110,24 +112,21 @@ def validate_label2id(label2id:Dict[str, int], errors:List[str]):
         return True, errors
 
 
-def validate(
-    dir_path: str, 
-    num_classes: int, 
-    label_list:List[str], 
-    img_list:List[str], 
-    yaml_label:List[str],
-    errors:List[str],
-    fix:bool=False # not used but be here for other dataset type
-    ):
-    label2id = get_label2id(label_list, num_classes)
-    flag, errors = validate_label2id(label2id, errors)
-    if not flag:
+class VOC(ObjectDetectionDatasetFormat):
+    def get_stat(self):
+        tmp_path, names, obj_stat, num_images = structure_convert(self.root_path, self.dataset_format)
+        return tmp_path, names, obj_stat, num_images
+
+    def specific_validation_for_each_dataset(self, **kwargs):
+        errors = kwargs["errors"]
+        img_list = kwargs["img_list"]
+        label_list = kwargs["label_list"]
+        num_classes = kwargs["num_classes"]
+        yaml_label = kwargs["yaml_label"]
+
+        label2id = get_label2id(label_list, num_classes)
+        _, errors = validate_label2id(label2id, errors)
+        errors = validate_yaml_names(yaml_label, label2id, num_classes, errors)
+        errors = validate_image_files_exist(img_list, label_list, errors)
+        errors = validate_label_files(img_list, label_list, num_classes, label2id, errors)
         return errors
-    errors = validate_yaml_names(yaml_label, label2id, num_classes, errors)
-    errors = validate_image_files_exist(img_list, label_list, "xml", errors)
-    log_n_print("[Validate: 4/5]: Validation finished for existing image files in the correct position.")
-    errors = validate_label_files(img_list, label_list, num_classes, label2id, errors)
-    log_n_print("[Validate: 5/5]: Validation finished for label files.")
-    return errors
-
-
