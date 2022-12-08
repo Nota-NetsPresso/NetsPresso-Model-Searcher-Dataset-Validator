@@ -4,7 +4,7 @@ from typing import Literal, List, Dict
 from pathlib import Path
 
 from src.config import img_file_types
-from src.task.validate import validate_object_detection_dataset_type, validate_data_yaml
+from src.task.validate import validate_object_detection_dataset_type, validate_data_yaml, validate_sub_dir_exsists
 from src.task.abs import AbstractTask, AbstractDatasetFormat
 from src.utils import get_target_suffix_file_list
 
@@ -28,6 +28,9 @@ class ObjectDetectionDatasetFormat(AbstractDatasetFormat):
         split_name = kwargs["split_name"]
 
         self.set_common_attrs(yaml_path, root_path, output_dir, split_name)
+        validate_object_detection_dataset_type(self.root_path, self.dataset_format)
+        if self.dataset_format == "voc":
+            validate_sub_dir_exsists(self.root_path)
         tmp_path, names, obj_stat, num_images = self.get_stat()
         errors, img_list, label_list, num_classes, temp_yaml_path, yaml_content, yaml_label = self.common_validation(names, num_images, obj_stat, tmp_path)
         
@@ -48,7 +51,6 @@ class ObjectDetectionDatasetFormat(AbstractDatasetFormat):
         errors = []
         # Common validation of object detection
         temp_yaml_path, yaml_content = self.prepare_yaml(names, num_images, obj_stat, tmp_path)
-        validate_object_detection_dataset_type(self.root_path, self.dataset_format)
         img_list = get_target_suffix_file_list(self.root_path, img_file_types)
         label_list = get_target_suffix_file_list(self.root_path, [f"*.{self.label_file_suffix}"])
         yaml_label, errors, num_classes = validate_data_yaml(temp_yaml_path, errors)

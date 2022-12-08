@@ -233,7 +233,7 @@ def validate_json_exist(dir_path: Path, errors:List[str]):
     image_dir_paths = get_target_dirs(dirs, img_file_types)
     json_dir_paths = get_target_dirs(dirs, ["*.json"])
     if len(image_dir_paths) != len(json_dir_paths):
-        errors.append("'json' annotation file must exist in the corresponding directory. Please read 'https://github.com/Nota-NetsPresso/NetsPresso-ModelSearch-Dataset-Validator#coco-dataset-structure-example'")
+        errors.append("'json' annotation file must exist in the corresponding directory. Please read 'https://docs.netspresso.ai/docs/ms-step1-prepare-dataset'")
     return errors
 
 

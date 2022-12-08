@@ -73,8 +73,7 @@ def get_label2id(label_list: List[str], num_classes: int) -> Dict[str, int]:
 
 
 def get_bbox_from_xml_obj(
-    obj, label2id: Dict[str, str], anno: str, errors: List[str]
-) -> (int, int, int, int, List[str]):
+    obj, label2id: Dict[str, str], anno: str, errors: List[str]):
     xml_file_name = Path(anno).parts[-1]
     try:
         label = obj.findtext("name")
@@ -297,7 +296,6 @@ def yolo_stat(data_path, yaml_path):
     obj_stat = []
     for anno in annotation_files:
         obj_stat.append(get_object_stat_yolo(anno, names))
-    
     obj_stat_ret = reduce(sum_stat_dict, obj_stat)
 
     return names, obj_stat_ret, num_images

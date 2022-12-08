@@ -22,3 +22,11 @@ class YamlException(ValidationException):
 
 class DatatypeException(ValidationException):
     pass
+
+
+class JsonException(ValidationException):
+    pass
+
+
+class Id2LabelJsonException(ValidationException):
+    pass

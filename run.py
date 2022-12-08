@@ -1,8 +1,4 @@
 import argparse
-import shutil
-import os
-import yaml
-from typing import Literal
 
 from src.task.wrapper import BaseWrapper
 from src.config import DatasetType, TaskType
@@ -55,7 +51,20 @@ def execute(
         test_yaml=None
         test_md5=None
     
-    base_wrapper.task_wrapper.task_class.postprocess(format, train_yaml, valid_yaml, test_yaml, valid_dir, test_dir, train_md5, test_md5, valid_md5, output_dir, succeed_list)
+    base_wrapper.task_wrapper.task_class.postprocess(
+        format, 
+        train_yaml, 
+        valid_yaml, 
+        test_yaml, 
+        valid_dir, 
+        test_dir, 
+        train_md5, 
+        test_md5, 
+        valid_md5, 
+        output_dir, 
+        succeed_list, 
+        task
+        )
 
 
 if __name__ == "__main__":
