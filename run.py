@@ -39,6 +39,9 @@ def execute(
             id2label_path=id2label_path
             )
         succeed_list.append(succeed)
+    else:
+        valid_yaml=None
+        valid_md5=None
     if test_dir :
         test_zip_path, test_yaml, test_md5, succeed = base_wrapper.dataset_format_wrapper.format_module.validate(
             yaml_path=yaml_path, 
@@ -48,6 +51,9 @@ def execute(
             id2label_path=id2label_path
         )
         succeed_list.append(succeed)
+    else:
+        test_yaml=None
+        test_md5=None
     
     base_wrapper.task_wrapper.task_class.postprocess(format, train_yaml, valid_yaml, test_yaml, valid_dir, test_dir, train_md5, test_md5, valid_md5, output_dir, succeed_list)
 
