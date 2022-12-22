@@ -52,3 +52,5 @@ img_file_types = [
         "*.mpo",
         "*.MPO",
     ]
+
+version="v1"

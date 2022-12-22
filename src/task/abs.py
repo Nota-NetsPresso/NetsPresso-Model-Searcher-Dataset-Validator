@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 
 from src.exceptions import LabelException
-from src.config import label_suffix_mapping
+from src.config import label_suffix_mapping, version
 from src.utils import make_yaml_file, calc_file_hash, log_n_print, make_yaml_content, write_error_txt, zip_files
 
 
@@ -31,9 +31,11 @@ class AbstractTask():
         test_md5:str,
         valid_md5:str,
         output_dir:str, 
-        succeed_list:List[bool]
+        succeed_list:List[bool],
+        task:str
         ):
         yaml_all = {}
+        yaml_all["task"] = task
         yaml_all["nc"] = train_yaml["nc"]
         yaml_all["format"] = format
         yaml_all["names"] = train_yaml["names"]
@@ -52,6 +54,7 @@ class AbstractTask():
 
         make_yaml_file(f'{output_dir}/data.yaml', yaml_all)
         md5_all["data"] = calc_file_hash(f'{output_dir}/data.yaml')
+        md5_all["version"] = version
         make_yaml_file(f'{output_dir}/certification.np', md5_all)
 
         if all(succeed_list):
