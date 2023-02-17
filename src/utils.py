@@ -14,7 +14,6 @@ import yaml
 import hashlib
 import datetime
 
-import cv2
 from loguru import logger
 
 sys.path.append("app/core/validator")

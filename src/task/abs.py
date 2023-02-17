@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any
 from pathlib import Path
 import shutil
 
@@ -69,7 +69,8 @@ class AbstractDatasetFormat():
         self.label_file_suffix = label_suffix_mapping[dataset_format]
         self.dir_path = None
 
-    def set_common_attrs(self, yaml_path:str, root_path:str, output_dir:str, split_name:Literal["train", "val", "test"]):
+    def set_common_attrs(self, yaml_path:str, root_path:str, output_dir:str, split_name):
+        # split_name:Literal["train", "val", "test"]
         self.yaml_path = yaml_path
         self.root_path = Path(root_path)
         self.output_dir = output_dir

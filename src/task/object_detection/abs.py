@@ -1,7 +1,4 @@
-import os
-import shutil
-from typing import Literal, List, Dict
-from pathlib import Path
+from typing import Dict
 
 from src.config import img_file_types
 from src.task.validate import validate_object_detection_dataset_type, validate_data_yaml, validate_sub_dir_exsists
@@ -29,20 +26,20 @@ class ObjectDetectionDatasetFormat(AbstractDatasetFormat):
 
         self.set_common_attrs(yaml_path, root_path, output_dir, split_name)
         validate_object_detection_dataset_type(self.root_path, self.dataset_format)
-        if self.dataset_format == "voc":
+
+        if self.dataset_format in ["coco", "voc"]:
             validate_sub_dir_exsists(self.root_path)
         tmp_path, names, obj_stat, num_images = self.get_stat()
         errors, img_list, label_list, num_classes, temp_yaml_path, yaml_content, yaml_label = self.common_validation(names, num_images, obj_stat, tmp_path)
         
         # validation for each dataset
-        error = self.specific_validation_for_each_dataset(
+        errors = self.specific_validation_for_each_dataset(
             errors=errors, 
             img_list=img_list, 
             label_list=label_list, 
             num_classes=num_classes, 
             yaml_label=yaml_label
             )
-
         zip_file_path, md5_hash, succeed = self.postprocess(errors, output_dir, temp_yaml_path, split_name, tmp_path)
         self.remove_trees(tmp_path)
         return zip_file_path, yaml_content, md5_hash, succeed

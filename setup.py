@@ -10,7 +10,8 @@ from setuptools import setup
 APP = ['gui.py']
 DATA_FILES = ['src']
 OPTIONS = {
-    'packages': ['src']
+    'packages': ['src'],
+    'iconfile':'nota_icon.ico',
 }
 
 setup(

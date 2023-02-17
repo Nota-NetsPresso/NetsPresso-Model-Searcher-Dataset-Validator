@@ -30,3 +30,7 @@ class JsonException(ValidationException):
 
 class Id2LabelJsonException(ValidationException):
     pass
+
+
+class ExceptionWithHyperlink(ValidationException):
+    pass
