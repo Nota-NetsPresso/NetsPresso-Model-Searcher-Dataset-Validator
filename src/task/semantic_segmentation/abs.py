@@ -13,6 +13,7 @@ class SemanticSegmentationTask(AbstractTask):
     def __init__(self):
         super().__init__()
 
+
 class SemanticSegmentationDatasetFormat(AbstractDatasetFormat):
     def __init__(self, dataset_format:str):
         super().__init__(dataset_format)
@@ -38,12 +39,14 @@ class SemanticSegmentationDatasetFormat(AbstractDatasetFormat):
 
     def postprocess(self, errors:List[str], output_dir:str, temp_yaml_path:str, split_name:str, tmp_path:str, id2label_path:str):
         succeed = self.write_error_or_not(errors, output_dir)
-        #self.remove_file(temp_yaml_path)
+        self.remove_file(temp_yaml_path)
         if succeed:
+            temp_id2label_path = Path(tmp_path)/Path(id2label_path).name
             # Copy id2label.json into zipped dir.
-            shutil.copy(id2label_path, Path(tmp_path)/Path(id2label_path).name)
+            shutil.copy(id2label_path, temp_id2label_path)
             zip_file_path = zip_files(os.path.join(output_dir, split_name), tmp_path)
             md5_hash = calc_file_hash(zip_file_path)
+            self.remove_file(temp_id2label_path)
         else:
             zip_file_path, md5_hash = None, None
         return zip_file_path, md5_hash, succeed
@@ -60,7 +63,7 @@ class SemanticSegmentationDatasetFormat(AbstractDatasetFormat):
         errors, img_list, label_list, num_classes, temp_yaml_path, yaml_content, yaml_label = self.common_validation(names, num_images, obj_stat, tmp_path)
         
         # validation for each dataset
-        error = self.specific_validation_for_each_dataset(
+        errors = self.specific_validation_for_each_dataset(
             errors=errors, 
             img_list=img_list, 
             label_list=label_list, 

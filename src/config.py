@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class DatasetType(Enum):
     # Object detection
     coco = "coco"
@@ -54,3 +53,4 @@ img_file_types = [
     ]
 
 version="v1"
+dataset_docs_url="https://docs.netspresso.ai/docs/ms-step1-prepare-dataset"

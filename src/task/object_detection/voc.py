@@ -1,7 +1,6 @@
-from typing import Dict, List, Literal
+from typing import Dict, List
 import sys
 import os
-from pathlib import Path
 
 sys.path.append("app/core/validator")
 from src.utils import (get_bbox_from_xml_obj, get_image_info_xml, 

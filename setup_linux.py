@@ -3,7 +3,7 @@ from cx_Freeze import setup, Executable
 buildOptions = dict(
     packages=["yaml", "loguru", "src"]
 ) 
-exe = [Executable("gui.py", targetName="NetsPresso Dataset Validator.exe", icon="nota_icon.ico")]
+exe = [Executable("gui.py", targetName="NetsPresso Dataset Validator", icon="nota_icon.ico", base=None)]
 
 setup(
     name='Filter', 

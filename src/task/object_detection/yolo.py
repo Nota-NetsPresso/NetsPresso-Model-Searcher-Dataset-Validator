@@ -1,11 +1,10 @@
 import sys
-import os
 from pathlib import Path
-from typing import List, Literal
+from typing import List
 
 sys.path.append("app/core/validator")
 from src.utils import yolo_stat
-from src.task.validate import validate_image_files_exist, validate_second_dir
+from src.task.validate import validate_image_files_exist, validate_second_dir, validate_sub_dir_exsists
 from src.task.object_detection.abs import ObjectDetectionDatasetFormat
 
 
@@ -95,7 +94,8 @@ def validate_label_files(
 
 
 class YOLO(ObjectDetectionDatasetFormat):
-    def set_common_attrs(self, yaml_path:str, root_path:str, output_dir:str, split_name:Literal["train", "val", "test"]):
+    def set_common_attrs(self, yaml_path:str, root_path:str, output_dir:str, split_name):
+        # split_name:Literal["train", "val", "test"]
         if yaml_path is None:
             raise Exception("yaml_path should be defined for yolo format")
         self.yaml_path = yaml_path
@@ -119,8 +119,10 @@ class YOLO(ObjectDetectionDatasetFormat):
         img_list = kwargs["img_list"]
         label_list = kwargs["label_list"]
         num_classes = kwargs["num_classes"]
-
+        
         errors = validate_second_dir(self.root_path, errors, ["images", "labels"])
+        validate_sub_dir_exsists(self.root_path/"images")
+        validate_sub_dir_exsists(self.root_path/"labels")
         errors = validate_image_files_exist(img_list, label_list, errors)
         errors = validate_label_files(label_list, num_classes, errors, fix=False)
         return errors

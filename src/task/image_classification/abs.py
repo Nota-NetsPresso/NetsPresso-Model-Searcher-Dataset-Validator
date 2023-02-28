@@ -1,7 +1,4 @@
-import os
-import shutil
-from typing import Literal, List, Dict
-from pathlib import Path
+from typing import Dict
 
 from src.task.validate import validate_data_yaml
 from src.task.abs import AbstractTask, AbstractDatasetFormat
@@ -35,9 +32,9 @@ class ImageClassificationDatasetFormat(AbstractDatasetFormat):
         self.set_common_attrs(yaml_path, root_path, output_dir, split_name)
         tmp_path, names, obj_stat, num_images = self.get_stat()
         errors, num_classes, temp_yaml_path, yaml_content, yaml_label = self.common_validation(names, num_images, obj_stat, tmp_path)
-        
+
         # validation for each dataset
-        error = self.specific_validation_for_each_dataset(
+        errors = self.specific_validation_for_each_dataset(
             errors=errors,
             names=names, 
             )

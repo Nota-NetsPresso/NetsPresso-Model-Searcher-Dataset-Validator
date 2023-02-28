@@ -1,9 +1,9 @@
 import importlib
-from typing import List, Literal
+from typing import List
 from pathlib import Path
 
 from src.utils import log_n_print, yaml_safe_load, get_filename_wo_suffix, replace_images2labels
-from src.exceptions import YamlException, DatatypeException, DirectoryException
+from src.exceptions import YamlException, DatatypeException, DirectoryException, ExceptionWithHyperlink
 
 
 def validate_image_files_exist(
@@ -42,7 +42,8 @@ def validate_image_mask_1_on_1_match(
     return errors
 
 
-def validate_object_detection_dataset_type(root_path: str, user_data_type:Literal["coco", "voc", "yolo"]):
+def validate_object_detection_dataset_type(root_path: str, user_data_type):
+    # user_data_type:Literal["coco", "voc", "yolo"]
     data_type = None
     paths = Path(root_path).glob("**/*")
     for p in paths:
@@ -56,7 +57,7 @@ def validate_object_detection_dataset_type(root_path: str, user_data_type:Litera
             data_type = "coco"
             break
     if not data_type:
-        raise DatatypeException(f"There are not any annotation files in {root_path} for {user_data_type} format.")
+        raise DatatypeException(f"There is no annotation file in {root_path} for {user_data_type} format.")
     elif user_data_type != data_type:
         raise DatatypeException(
             f"Check correct data type, your dataset type looks like '{data_type}', or unnecessary extra files exist in label directory."
@@ -95,7 +96,7 @@ def validate_second_dir(dir_path: Path, errors: List[str], targets:List[str]) ->
             check_dir_paths.append(str(p.name))
     for target in targets:
         if not (f"{target}" in check_dir_paths):
-            errors.append(f"Dataset dosen't have '{target}' dir under {dir_path}.")
+            raise ExceptionWithHyperlink(f"Wrong dataset dir structure in {check_dir_paths}")
     return errors
 
 

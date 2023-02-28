@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 from pathlib import Path
 
 from src.config import img_file_types

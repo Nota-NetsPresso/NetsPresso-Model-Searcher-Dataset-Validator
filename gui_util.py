@@ -8,6 +8,8 @@ import tkinter.messagebox
 from tkinter import CURRENT, END, Text
 
 from src.task.wrapper import BaseWrapper
+from src.exceptions import ExceptionWithHyperlink
+from src.config import dataset_docs_url
 
 
 class HyperlinkManager:
@@ -197,6 +199,16 @@ def run(
             new_popup.update()
         else:
             tkinter.messagebox.showinfo("Info", f"Validation Fail, Please read validation_result.txt file in {output_dir_get}")
+    except ExceptionWithHyperlink as e:
+        popup.destroy()
+        error_message_popup = tkinter.Toplevel()
+        error_message_popup.geometry("+%d+%d" %(x+120,y+100))
+        error_message_popup_first=tkinter.Label(error_message_popup, text=str(e))
+        error_message_popup_first.grid(row=0,column=0)
+        error_message_popup_second = tkinter.Label(error_message_popup, text=f"{dataset_docs_url}", fg="blue", cursor="hand2")
+        error_message_popup_second.grid(row=1,column=0)
+        error_message_popup_second.bind("<Button-1>", open_url)
+
     except Exception as e:
         popup.destroy()
         tkinter.messagebox.showerror("Error", e)

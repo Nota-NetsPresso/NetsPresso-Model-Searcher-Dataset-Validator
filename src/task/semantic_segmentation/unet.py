@@ -1,11 +1,11 @@
-from typing import Dict, Literal, List
+from typing import Dict, List
 
 import cv2
 
 from src.config import img_file_types
 from src.exceptions import Id2LabelJsonException
 from src.utils import json_load, get_target_suffix_file_list
-from src.task.validate import validate_second_dir, validate_image_mask_1_on_1_match
+from src.task.validate import validate_second_dir, validate_image_mask_1_on_1_match, validate_sub_dir_exsists
 from src.task.semantic_segmentation.abs import SemanticSegmentationDatasetFormat
 
 
@@ -75,6 +75,8 @@ class UNET(SemanticSegmentationDatasetFormat):
         id2label_path = kwargs["id2label_path"]
         validate_id2label_json_file(id2label_path)
         errors = validate_second_dir(self.root_path, errors, ["image", "mask"])
+        validate_sub_dir_exsists(self.root_path/"image")
+        validate_sub_dir_exsists(self.root_path/"mask")
         errors = validate_image_mask_1_on_1_match(img_list, label_list, errors)
         # errors = validate_label_files(label_list, num_classes, errors, fix=False) # TODO: Do it need to validte mask file?
         return errors
