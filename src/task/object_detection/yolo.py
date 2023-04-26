@@ -105,7 +105,7 @@ class YOLO(ObjectDetectionDatasetFormat):
 
     def get_stat(self):
         tmp_path = str(self.root_path)
-        names, obj_stat, num_images = yolo_stat(tmp_path, self.yaml_path)        
+        names, obj_stat, num_images = yolo_stat(tmp_path, self.yaml_path)
         return tmp_path, names, obj_stat, num_images
         
     def remove_trees(self, tmp_path):

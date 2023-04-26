@@ -160,6 +160,7 @@ def run(
 
         popup.update()
         popup_label.config(text="Doing validate postprocess.")
+
         base_wrapper.task_wrapper.task_class.postprocess(
             dataset_type, 
             train_yaml, 

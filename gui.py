@@ -208,8 +208,8 @@ def input_validation(yaml_path_get, id2label_path_get, train_dir_get:str, test_d
     if id2label_path_get is None:
         raise JsonException("Select json file for 'id2label Path(json)'.")
     else:
-        if Path(id2label_path_get).suffix != ".json" and id2label_path_get != "None":
-            raise JsonException("Select json file for 'id2label Path(json)'.")
+        if Path(id2label_path_get).name != "id2label.json" and id2label_path_get != "None":
+            raise JsonException("JSON file name have to be 'id2label.json' for 'id2label Path(json)'.")
 
 
 task_title=tkinter.Label(frame, text="Task", font=("Arial", 10, "bold"))
