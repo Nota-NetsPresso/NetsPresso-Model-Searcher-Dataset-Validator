@@ -198,7 +198,7 @@ def write_error_txt(errors: List[str], output_dir):
 
 def log_n_print(message:str):
     if not LOCAL:
-        logger.debug(message)
+        logger.info(message)
     else:
         print(message)
 

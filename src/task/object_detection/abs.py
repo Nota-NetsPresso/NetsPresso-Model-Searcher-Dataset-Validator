@@ -18,7 +18,7 @@ class ObjectDetectionDatasetFormat(AbstractDatasetFormat):
     def specific_validation_for_each_dataset(self):
         raise NotImplementedError
     
-    def validate(self, **kwargs):
+    def validate(self, storage_type:str = "s3", **kwargs):
         yaml_path = kwargs["yaml_path"]
         root_path = kwargs["root_path"]
         output_dir = kwargs["output_dir"]
@@ -40,7 +40,7 @@ class ObjectDetectionDatasetFormat(AbstractDatasetFormat):
             num_classes=num_classes, 
             yaml_label=yaml_label
             )
-        zip_file_path, md5_hash, succeed = self.postprocess(errors, output_dir, temp_yaml_path, split_name, tmp_path)
+        zip_file_path, md5_hash, succeed = self.postprocess(errors, output_dir, temp_yaml_path, split_name, tmp_path, storage_type)
         self.remove_trees(tmp_path)
         return zip_file_path, yaml_content, md5_hash, succeed
 
