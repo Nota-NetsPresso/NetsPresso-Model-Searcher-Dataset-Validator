@@ -94,9 +94,11 @@ def validate_second_dir(dir_path: Path, errors: List[str], targets:List[str]) ->
     for p in paths:
         if p.is_dir():
             check_dir_paths.append(str(p.name))
+    if check_dir_paths == []:
+        raise ExceptionWithHyperlink(f"Wrong dataset dir structure in {dir_path}")
     for target in targets:
-        if not (f"{target}" in check_dir_paths):
-            raise ExceptionWithHyperlink(f"Wrong dataset dir structure in {check_dir_paths}")
+        if not (target in check_dir_paths):
+            raise ExceptionWithHyperlink(f"Wrong dataset dir structure in {dir_path}")
     return errors
 
 

@@ -19,6 +19,31 @@ class AbstractTask():
         if test_dir is None and valid_dir is None:
             raise Exception("At least one of test_dir or valid_dir should be specified.")
 
+    def get_allkey(self, train_yaml:Dict[str, Any], valid_yaml:Dict[str, Any], test_yaml:Dict[str, Any]):
+        all_dict=[train_yaml["obj_stat"]]
+        if valid_yaml:
+            all_dict.append(valid_yaml["obj_stat"])
+        if test_yaml:
+            all_dict.append(test_yaml["obj_stat"])
+        allkey=[]
+        for dictio in all_dict:
+            for key in dictio:
+                allkey.append(key)
+        return allkey
+
+    def add_zero(self, allkey:List[str], train_yaml:Dict[str, Any], valid_yaml:Dict[str, Any], test_yaml:Dict[str, Any]):
+        train_yaml, valid_yaml, test_yaml
+        all_dict=[train_yaml]
+        if valid_yaml:
+            all_dict.append(valid_yaml)
+        if test_yaml:
+            all_dict.append(test_yaml)
+        for dictio in all_dict:
+            print("dictio", dictio)
+            for key in allkey:
+                if key not in dictio["obj_stat"]:
+                    dictio["obj_stat"][key]=0
+
     def postprocess(
         self,
         format:str,
@@ -34,6 +59,8 @@ class AbstractTask():
         succeed_list:List[bool],
         task:str
         ):
+        allkey = self.get_allkey(train_yaml, valid_yaml, test_yaml)
+        self.add_zero(allkey, train_yaml, valid_yaml, test_yaml)
         yaml_all = {}
         yaml_all["task"] = task
         yaml_all["nc"] = train_yaml["nc"]

@@ -226,6 +226,8 @@ def get_class_info_voc(annotation_file):
 def get_object_stat(annotation_file, format):
     if format == "coco":
         return get_object_stat_coco(annotation_file)
+    if format == "voc":
+        return get_object_stat_voc(annotation_file)
     
 
 def get_object_stat_coco(annotation_file):
@@ -245,7 +247,6 @@ def get_object_stat_coco(annotation_file):
     ret = {}
     for ele in stat_dict:
         ret[categories_dict[ele]] = stat_dict[ele]
-    print(ret)
     return ret
 
 
