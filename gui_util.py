@@ -83,6 +83,7 @@ def run(
     x,
     y
     ):
+    # 이 함수 안에서 storage_type 을 task, datasetformat class 의 post_process 에서 사용할 수 있도록 처리해아 합니다
     try:
         #start progress bar
         popup = tkinter.Toplevel()

@@ -160,6 +160,7 @@ def on_click_proceed():
             input_validation(yaml_path_get, id2label_path_get, train_dir_get, test_dir_get, valid_dir_get, output_dir_get)
             x = window.winfo_x()
             y = window.winfo_y()
+            # 아래 validator 클래스에 storage type 을 전달해야 합니다.
             validator = Validator(dataset_type, task_type, train_dir_get, test_dir_get, valid_dir_get, output_dir_get, yaml_path_get, id2label_path_get, x, y)
             validator.start()
         except Exception as e:
@@ -190,6 +191,9 @@ def get_validator_input():
     else:
         id2label_path_get = id2label_path.get()
            # dataset_type                       # task_type                    # train_dir      # test_dir    # valid_dir    # output_dir      # yaml_path    # id2label_path
+    """
+    이 자리에 storage type 을 가져오는 부분이 필요합니다.
+    """
     return dataset_map[dataset_combobox.get()], task_map[task_combobox.get()], train_dir.get(), test_dir_get, valid_dir_get, output_dir.get(), yaml_path_get, id2label_path_get
 
 
@@ -228,6 +232,10 @@ dataset_combobox.bind("<<ComboboxSelected>>", combine_switch) # event, triggerd 
 
 first_separator=tkinter.ttk.Separator(frame, orient="horizontal")
 first_separator.grid(column=0, row=row_order["first_separator"], columnspan=3, sticky='ew')
+
+"""
+이 자리에 storage type 을 위한 콤보박스가 추가되어야 합니다.
+"""
 
 # dataset_dir_title=tkinter.Label(frame, text="Dataset Directory", font=("Arial", 10, "bold"))
 # dataset_dir_title.grid(column=title_column, row=row_order["dataset_dir"], sticky='w')
