@@ -4,6 +4,7 @@ from typing import List, Dict
 import shutil
 
 from src.config import img_file_types
+from src.exceptions import LabelException
 from src.task.abs import AbstractTask, AbstractDatasetFormat
 from src.utils import get_target_suffix_file_list, zip_files, calc_file_hash
 from src.task.validate import validate_data_yaml
@@ -41,14 +42,17 @@ class SemanticSegmentationDatasetFormat(AbstractDatasetFormat):
         succeed = self.write_error_or_not(errors, output_dir)
         self.remove_file(temp_yaml_path)
         if succeed:
-            temp_id2label_path = Path(tmp_path)/Path(id2label_path).name
-            # Copy id2label.json into zipped dir.
-            shutil.copy(id2label_path, temp_id2label_path)
-            zip_file_path = zip_files(os.path.join(output_dir, split_name), tmp_path)
-            md5_hash = calc_file_hash(zip_file_path)
-            self.remove_file(temp_id2label_path)
+            if storage_type=="s3":
+                temp_id2label_path = Path(tmp_path)/Path(id2label_path).name
+                # Copy id2label.json into zipped dir.
+                shutil.copy(id2label_path, temp_id2label_path)
+                zip_file_path = zip_files(os.path.join(output_dir, split_name), tmp_path)
+                md5_hash = calc_file_hash(zip_file_path)
+                self.remove_file(temp_id2label_path)
+            else:
+                zip_file_path, md5_hash = None, None
         else:
-            zip_file_path, md5_hash = None, None
+            raise LabelException("Validation fail, please read validation_result.txt")
         return zip_file_path, md5_hash, succeed
 
     def validate(self, **kwargs):

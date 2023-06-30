@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 from pathlib import Path
 import shutil
 
@@ -57,11 +57,13 @@ class AbstractTask():
         valid_md5:str,
         output_dir:str, 
         succeed_list:List[bool],
-        task:str
+        task:str,
         ):
         allkey = self.get_allkey(train_yaml, valid_yaml, test_yaml)
         self.add_zero(allkey, train_yaml, valid_yaml, test_yaml)
         yaml_all = {}
+        yaml_all["system_uuid"] = "system_uuid"
+        yaml_all["storage_type"] = storage_type
         yaml_all["task"] = task
         yaml_all["nc"] = train_yaml["nc"]
         yaml_all["format"] = format
@@ -133,9 +135,11 @@ class AbstractDatasetFormat():
         succeed = self.write_error_or_not(errors, output_dir)
         self.remove_file(temp_yaml_path)
         if succeed:
-            zip_file_path = zip_files(os.path.join(output_dir, split_name), tmp_path)
-            md5_hash = calc_file_hash(zip_file_path)
+            if storage=="s3":
+                zip_file_path = zip_files(os.path.join(output_dir, split_name), tmp_path)
+                md5_hash = calc_file_hash(zip_file_path)
+            else:
+                zip_file_path, md5_hash = None, None
         else:
-            # zip_file_path, md5_hash = None, None
             raise LabelException("Validation fail, please read validation_result.txt")
         return zip_file_path, md5_hash, succeed

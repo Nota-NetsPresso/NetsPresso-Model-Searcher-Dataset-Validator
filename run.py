@@ -77,9 +77,10 @@ if __name__ == "__main__":
     parser.add_argument("--test_dir", type=str, required=False, help="test dataset path.")
     parser.add_argument("--valid_dir", type=str, required=False, help="validation dataset path.")
     parser.add_argument("--output_dir", type=str, required=False, help="output directory")
+    parser.add_argument("--storage_type", type=str, default="s3", required=False, help="storage type of dataset location")
     args = parser.parse_args()
 
-    format, task, yaml_path, train_dir, test_dir, valid_dir, output_dir, id2label_path=(
+    format, task, yaml_path, train_dir, test_dir, valid_dir, output_dir, id2label_path, storage_type=(
         str(args.format),
         str(args.task),
         args.yaml_path,
@@ -87,7 +88,8 @@ if __name__ == "__main__":
         args.test_dir,
         args.valid_dir,
         args.output_dir.rstrip('/'),
-        args.id2label_path
+        args.id2label_path,
+        args.storage_type
     )
     
     execute(format, task, train_dir, test_dir, valid_dir, output_dir, yaml_path, id2label_path)
