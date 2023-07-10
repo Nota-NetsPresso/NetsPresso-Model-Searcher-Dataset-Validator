@@ -74,7 +74,7 @@ Start dataset validation.
 Validation completed! Now try your dataset on NetsPresso!
 ```
 
-#### :small_blue_diamond:When using dataset in personal server
+#### :small_blue_diamond:When uploading via Netspresso web page
 
 
 Five(or Four) files will be created at the selected output path.
