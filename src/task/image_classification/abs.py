@@ -23,7 +23,7 @@ class ImageClassificationDatasetFormat(AbstractDatasetFormat):
         yaml_label, errors, num_classes = validate_data_yaml(temp_yaml_path, errors)
         return errors, num_classes, temp_yaml_path, yaml_content, yaml_label
 
-    def validate(self, **kwargs):
+    def validate(self, storage_type:str = "s3", **kwargs):
         yaml_path = kwargs["yaml_path"]
         root_path = kwargs["root_path"]
         output_dir = kwargs["output_dir"]
@@ -39,5 +39,5 @@ class ImageClassificationDatasetFormat(AbstractDatasetFormat):
             names=names, 
             )
 
-        zip_file_path, md5_hash, succeed = self.postprocess(errors, output_dir, temp_yaml_path, split_name, tmp_path)
+        zip_file_path, md5_hash, succeed = self.postprocess(errors, output_dir, temp_yaml_path, split_name, tmp_path, storage_type)
         return zip_file_path, yaml_content, md5_hash, succeed
